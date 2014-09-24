@@ -90,7 +90,7 @@ int main(int argc, char* argv[]) {
   #endif
   capnp::ReaderOptions readerOpts;
   readerOpts.traversalLimitInWords = UINT64_MAX;
-  capnp::EzRpcServer server("*", 0, readerOpts);
+  modcapnp::EzRpcServer server("*", 0, readerOpts);
   kj::Own<holmes::DAL> base = kj::heap<holmes::PgDAL>();
   server.exportCap("holmes", kj::heap<holmes::HolmesImpl>(kj::mv(base)));
 

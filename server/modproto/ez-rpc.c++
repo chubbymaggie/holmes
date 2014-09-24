@@ -27,7 +27,9 @@
 #include "threadlocal.h"
 #include <map>
 
-namespace capnp {
+using namespace capnp;
+
+namespace modcapnp {
 
 KJ_THREADLOCAL_PTR(EzRpcContext) threadEzContext = nullptr;
 

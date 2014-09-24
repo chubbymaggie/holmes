@@ -26,10 +26,10 @@
 #include <capnp/message.h>
 
 struct sockaddr;
-
+using namespace capnp;
 namespace kj { class AsyncIoProvider; class LowLevelAsyncIoProvider; }
 
-namespace capnp {
+namespace modcapnp {
 
 class EzRpcContext;
 
