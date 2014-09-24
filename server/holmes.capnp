@@ -36,6 +36,18 @@ interface Holmes {
     args     @1 :List(Val);
   }
 
+  struct Range {
+    name @0 :Var;
+    start :union {
+      exact @1 :UInt64;
+      var   @2 :Var;
+    }
+    length :union {
+      exact @3 :UInt64;
+      var   @4 :Var;
+    }
+  }
+
   # Argument restriction when searching
   struct TemplateVal {
     union {
@@ -43,6 +55,7 @@ interface Holmes {
       unbound  @1 :Void; #Argument is unrestricted
       bound    @2 :Var;  #Argument is bound to a var and must be consistent
       forall   @3 :Var;  #Argument will aggregate a list of all possibilities
+      subBlob  @4 :Range;
     }
   }
 

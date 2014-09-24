@@ -445,6 +445,7 @@ std::vector<DAL::Context> PgDAL::getFacts(
   std::vector<std::string> bindName;
   std::vector<Holmes::HType::Reader> bindType;
   std::vector<bool> bindAll;
+  std::vector<Holmes::TemplateVal::Reader> subBlob;
   std::string query = "";
   size_t clauseN = 0;
   for (auto itc = clauses.begin(); itc != clauses.end(); ++itc, ++clauseN) {
@@ -467,14 +468,19 @@ std::vector<DAL::Context> PgDAL::getFacts(
         case Holmes::TemplateVal::EXACT_VAL:
           whereClause.push_back(tableVar + ".arg" + std::to_string(i) + "=" + quoteVal(work, args[i].getExactVal()));
           break;
+        case Holmes::TemplateVal::SUB_BLOB:
         case Holmes::TemplateVal::BOUND:
         case Holmes::TemplateVal::FORALL:
           {
             uint32_t var;
             if (args[i].which() == Holmes::TemplateVal::BOUND) {
               var = args[i].getBound();
-            } else {
+            } else if (args[i].which() == Holmes::TemplateVal::FORALL) {
               var = args[i].getForall();
+            } else if (args[i].which() == Holmes::TemplateVal::SUB_BLOB) {
+              var = args[i].getSubBlob().getName();
+            } else {
+              throw "Impossible branch";
             }
             auto argName = tableVar + ".arg" + std::to_string(i);
             if (var >= bindName.size()) {
@@ -483,6 +489,7 @@ std::vector<DAL::Context> PgDAL::getFacts(
               bindName.push_back(argName);
               bindType.push_back(types[itc->getFactName()][i]);
               bindAll.push_back(args[i].which() == Holmes::TemplateVal::FORALL);
+              subBlob.push_back(args[i]);
             } else {
             //This is a repeat, it needs to be unified
               std::string cond = argName + "=" + bindName[var];
@@ -520,6 +527,23 @@ std::vector<DAL::Context> PgDAL::getFacts(
     if (bindAll[i]) {
       select += "array_agg(" + bindName[i] + ")";
       anyAll = true;
+    } else if (subBlob[i].which() == Holmes::TemplateVal::SUB_BLOB) {
+      auto sb = subBlob[i].getSubBlob();
+      auto start = sb.getStart();
+      std::string startExpr;
+      if (start.isExact()) {
+        startExpr = work.quote(start.getExact());
+      } else {
+        startExpr = bindName[start.getVar()];
+      }
+      auto len = sb.getLength();
+      std::string lenExpr;
+      if (len.isExact()) {
+        lenExpr = work.quote(len.getExact());
+      } else {
+        lenExpr = bindName[len.getVar()];
+      }
+      select += "substring(" + bindName[i] + " from " + startExpr + " for " + lenExpr + ")";
     } else {
       select += bindName[i];
       groupBy += bindName[i] + ",";
