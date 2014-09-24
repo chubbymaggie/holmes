@@ -9,7 +9,8 @@ include_directories(${CAPNPROTO_INCLUDE_DIRS}
 CAPNPROTO_GENERATE_CPP(CAPN_SRCS CAPN_HDRS holmes.capnp)
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 add_executable(holmes holmes.cpp analyzer.cpp pgDal.cpp
-        fact_util.cpp ${CAPN_SRCS} ${CAPN_HDRS})
+        fact_util.cpp modproto/ez-rpc.c++
+        ${CAPN_SRCS} ${CAPN_HDRS})
 target_link_libraries(holmes ${CAPNPROTO_LIBRARIES}
                       ${GLOG_LIBRARIES}
                       ${PostgreSQL_LIBRARIES} ${PQXX_LIBRARIES} pthread)

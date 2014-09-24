@@ -1,11 +1,10 @@
 #include <iostream>
 
-#include <capnp/ez-rpc.h>
-
 #include "glog.h"
 #include "holmes.capnp.h"
 #include "pgDal.h"
 #include "analyzer.h"
+#include "modproto/ez-rpc.h"
 
 namespace holmes {
 
@@ -89,7 +88,9 @@ int main(int argc, char* argv[]) {
   #ifdef USE_GLOG
   google::InitGoogleLogging(argv[0]);
   #endif
-  capnp::EzRpcServer server("*");
+  capnp::ReaderOptions readerOpts;
+  readerOpts.traversalLimitInWords = UINT64_MAX;
+  capnp::EzRpcServer server("*", 0, readerOpts);
   kj::Own<holmes::DAL> base = kj::heap<holmes::PgDAL>();
   server.exportCap("holmes", kj::heap<holmes::HolmesImpl>(kj::mv(base)));
 
